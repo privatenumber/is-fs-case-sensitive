@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Logs
+logs
+*.log
+
+# Node dependency directory
+node_modules
+
+# Output of 'npm pack'
+*.tgz
+
+# Distribution
+dist
+
+# Cache
+.eslintcache
