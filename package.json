@@ -1,0 +1,42 @@
+{
+  "name": "is-fs-case-sensitive",
+  "version": "0.0.0-semantic-release",
+  "description": "The missing is-fs-case-sensitive()",
+  "keywords": [
+    "fs",
+    "promise",
+    "promises",
+    "exists"
+  ],
+  "license": "MIT",
+  "repository": "privatenumber/is-fs-case-sensitive",
+  "funding": "https://github.com/privatenumber/is-fs-case-sensitive?sponsor=1",
+  "author": {
+    "name": "Hiroki Osame",
+    "email": "hiroki.osame@gmail.com"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    },
+    "import": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "imports": {
+    "#is-fs-case-sensitive": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    }
+  }
+}
