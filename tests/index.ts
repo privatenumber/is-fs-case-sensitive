@@ -4,8 +4,8 @@ import { describe, expect } from 'manten';
 import { isFsCaseSensitive } from '#is-fs-case-sensitive';
 
 describe('is-fs-case-sensitive', ({ test }) => {
-	test('builtin fs', async () => {
-		const isCaseSensitive = await isFsCaseSensitive();
+	test('builtin fs', () => {
+		const isCaseSensitive = isFsCaseSensitive();
 		const { platform } = process;
 
 		if (platform === 'win32' || platform === 'darwin') {
@@ -17,10 +17,10 @@ describe('is-fs-case-sensitive', ({ test }) => {
 		}
 	});
 
-	test('custom fs', async () => {
+	test('custom fs', () => {
 		const customFs = Volume.fromJSON({});
 
-		const isCaseSensitive = await isFsCaseSensitive(customFs as unknown as typeof fs);
+		const isCaseSensitive = isFsCaseSensitive(customFs as unknown as typeof fs);
 		expect(isCaseSensitive).toBe(true);
 	});
 });
