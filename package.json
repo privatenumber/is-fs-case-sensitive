@@ -1,12 +1,12 @@
 {
 	"name": "is-fs-case-sensitive",
 	"version": "0.0.0-semantic-release",
-	"description": "The missing is-fs-case-sensitive()",
+	"description": "Check whether the file-system is case-sensitive",
 	"keywords": [
 		"fs",
-		"promise",
-		"promises",
-		"exists"
+		"case",
+		"sensitive",
+		"insensitive"
 	],
 	"license": "MIT",
 	"repository": "privatenumber/is-fs-case-sensitive",
