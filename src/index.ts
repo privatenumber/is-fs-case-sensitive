@@ -44,7 +44,7 @@ export const isFsCaseSensitive = (
 	}
 
 	// Generate random file and see if it exists
-	const fileName = `/${getRandomWord(10)}`;
+	const fileName = `./${getRandomWord(10)}`;
 	fsInstance.writeFileSync(fileName, '');
 	const isCaseSensitive = !fsInstance.existsSync(invertCase(fileName));
 	fsInstance.unlinkSync(fileName);
