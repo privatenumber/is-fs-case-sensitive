@@ -49,13 +49,13 @@
 		"prepack": "pnpm build && clean-pkg-json"
 	},
 	"devDependencies": {
-		"@types/node": "^18.11.18",
+		"@types/node": "^24.6.2",
 		"clean-pkg-json": "^1.2.0",
 		"lintroll": "^1.19.1",
-		"manten": "^0.6.0",
-		"memfs": "^3.4.12",
-		"pkgroll": "^1.8.0",
-		"tsx": "^3.12.1",
-		"typescript": "^4.9.4"
+		"manten": "^1.5.0",
+		"memfs": "^4.48.1",
+		"pkgroll": "^2.15.4",
+		"tsx": "^4.20.6",
+		"typescript": "^5.9.3"
 	}
 }
