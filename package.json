@@ -15,10 +15,10 @@
 		"name": "Hiroki Osame",
 		"email": "hiroki.osame@gmail.com"
 	},
-	"type": "module",
 	"files": [
 		"dist"
 	],
+	"type": "module",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.cts",
@@ -39,36 +39,23 @@
 			"default": "./dist/index.mjs"
 		}
 	},
+	"packageManager": "pnpm@10.18.0",
 	"scripts": {
-		"prepare": "simple-git-hooks",
-		"lint": "eslint --cache .",
+		"lint": "lintroll",
 		"type-check": "tsc --noEmit",
 		"test": "tsx tests",
 		"dev": "tsx watch --conditions=development tests",
 		"build": "pkgroll --minify",
 		"prepack": "pnpm build && clean-pkg-json"
 	},
-	"simple-git-hooks": {
-		"pre-commit": "pnpm test && pnpm lint-staged"
-	},
-	"lint-staged": {
-		"*.ts": "pnpm lint"
-	},
 	"devDependencies": {
-		"@pvtnbr/eslint-config": "^0.33.0",
 		"@types/node": "^18.11.18",
 		"clean-pkg-json": "^1.2.0",
-		"eslint": "^8.30.0",
-		"lint-staged": "^13.1.0",
+		"lintroll": "^1.19.1",
 		"manten": "^0.6.0",
 		"memfs": "^3.4.12",
 		"pkgroll": "^1.8.0",
-		"simple-git-hooks": "^2.8.1",
 		"tsx": "^3.12.1",
 		"typescript": "^4.9.4"
-	},
-	"eslintConfig": {
-		"extends": "@pvtnbr"
-	},
-	"packageManager": "pnpm@10.18.0"
+	}
 }

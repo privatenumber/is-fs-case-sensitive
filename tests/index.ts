@@ -1,4 +1,4 @@
-import fs from 'fs';
+import type fs from 'fs';
 import { Volume } from 'memfs';
 import { describe, expect } from 'manten';
 import { isFsCaseSensitive } from '#is-fs-case-sensitive';
