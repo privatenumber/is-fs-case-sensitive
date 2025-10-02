@@ -42,7 +42,7 @@
 	"packageManager": "pnpm@10.18.0",
 	"scripts": {
 		"lint": "lintroll",
-		"type-check": "tsc --noEmit",
+		"type-check": "tsc",
 		"test": "tsx tests",
 		"dev": "tsx watch --conditions=development tests",
 		"build": "pkgroll --minify",
