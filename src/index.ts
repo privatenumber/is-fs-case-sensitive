@@ -1,53 +1,62 @@
 import fs from 'fs';
+import os from 'os';
+import path from 'path';
 
 const invertCase = (string: string) => {
 	let newString = '';
-
 	for (let i = 0; i < string.length; i += 1) {
-		const character = string[i];
+		const character = string[i]!;
 		const uppercase = character.toUpperCase();
-		newString += (
-			character === uppercase
-				? character.toLowerCase()
-				: uppercase
-		);
+		newString += character === uppercase ? character.toLowerCase() : uppercase;
 	}
-
 	return newString;
 };
 
-const UPPER = 65;
-const LOWER = 97;
-const getRandomLetter = () => Math.floor(Math.random() * 26);
-const getRandomWord = (length: number) => Array.from(
-	{ length },
-	() => String.fromCodePoint(
-		getRandomLetter()
-		+ (Math.random() > 0.5 ? UPPER : LOWER),
-	),
-).join('');
+let caseSensitivity: boolean | undefined;
 
 export const isFsCaseSensitive = (
 	fsInstance = fs,
-) => {
-	/**
-	 * Check Node.js path if it exists
-	 *
-	 * Originally used the current file name, but it's more complicated
-	 * because you have to use __filename or import.meta.url depending
-	 * on the context, and the actual file name is user-defined and hence
-	 * can be case-insensitive (e.g. _)
-	 */
-	const checkFile = process.execPath;
-	if (fsInstance.existsSync(checkFile)) {
-		return !fsInstance.existsSync(invertCase(checkFile));
+): boolean => {
+	// Return cached result on subsequent calls
+	if (caseSensitivity !== undefined) {
+		return caseSensitivity;
 	}
 
-	// Generate random file and see if it exists
-	const fileName = `/${getRandomWord(10)}`;
-	fsInstance.writeFileSync(fileName, '');
-	const isCaseSensitive = !fsInstance.existsSync(invertCase(fileName));
-	fsInstance.unlinkSync(fileName);
+	/**
+	 * Primary Method: Check an existing, known file path.
+	 * We use `process.execPath` because it's guaranteed to exist and
+	 * avoids needing any filesystem write permissions.
+	 */
+	const checkFile = process.execPath;
+	if (checkFile && fsInstance.existsSync(checkFile)) {
+		const invertedCheckFile = invertCase(checkFile);
 
-	return isCaseSensitive;
+		// If the inverted-case path is the same as the original,
+		// it means there were no characters to invert, so we must use the fallback.
+		if (invertedCheckFile === checkFile) {
+			// Fallthrough to the write-based check
+		} else {
+			caseSensitivity = !fsInstance.existsSync(invertedCheckFile);
+			return caseSensitivity;
+		}
+	}
+
+	/**
+	 * Fallback Method: Create a temporary file.
+	 * This uses the process ID to create a unique filename, avoiding conflicts.
+	 */
+	const temporaryFile = path.join(os.tmpdir(), `is-fs-case-sensitive-test-${process.pid}`);
+	try {
+		fsInstance.writeFileSync(temporaryFile, '');
+		caseSensitivity = !fsInstance.existsSync(invertCase(temporaryFile));
+	} finally {
+		// Ensure the temporary file is always cleaned up
+		try {
+			fsInstance.unlinkSync(temporaryFile);
+		} catch {
+			// Ignore errors on cleanup
+		}
+	}
+
+	return caseSensitivity;
 };
