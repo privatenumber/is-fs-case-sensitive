@@ -60,15 +60,18 @@ const checkDirectoryCaseWithWrite = (directory: string, fsInstance: FsSubset): b
 /**
  * Detects whether the filesystem is case-sensitive.
  *
- * Uses a fast, I/O-free primary method that checks if the current working directory
- * path can be accessed with inverted case. Falls back to writing a temporary file
- * if the primary method is inconclusive.
+ * Uses a fast, I/O-free primary method that checks if the current working
+ * directory path can be accessed with inverted case. Falls back to writing
+ * a temporary file if the primary method is inconclusive.
  *
- * Different mount points can have different case-sensitivity settings, so this function
- * checks the filesystem where the current working directory resides.
+ * Different mount points can have different case-sensitivity settings, so
+ * this function checks the filesystem where the current working directory
+ * resides.
  *
- * @param fsInstance - Custom filesystem implementation (primarily for testing). Defaults to Node.js `fs` module.
- * @param useCache - Whether to cache the result. Defaults to `true`. When enabled, subsequent calls return instantly without re-checking.
+ * @param fsInstance - Custom filesystem implementation (primarily for
+ * testing). Defaults to Node.js `fs` module.
+ * @param useCache - Whether to cache the result. Defaults to `true`. When
+ * enabled, subsequent calls return instantly without re-checking.
  * @returns `true` if the filesystem is case-sensitive, `false` otherwise
  *
  * @example

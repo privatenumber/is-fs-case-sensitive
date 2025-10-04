@@ -1,6 +1,6 @@
 import type { Stats, PathLike, PathOrFileDescriptor } from 'fs';
 import path from 'path';
-import { describe, test, expect } from 'manten';
+import { describe, expect } from 'manten';
 import { createFixture } from 'fs-fixture';
 import { isFsCaseSensitive } from '../src/index.js';
 
