@@ -1,5 +1,4 @@
 import type { Stats, PathLike, PathOrFileDescriptor } from 'fs';
-import os from 'os';
 import path from 'path';
 import { describe, test, expect } from 'manten';
 import { isFsCaseSensitive } from '../src/index.js';
@@ -24,40 +23,46 @@ const createMockFs = (options: { isCaseSensitive: boolean }) => {
 	};
 };
 
-describe('Unit Tests: isFsCaseSensitive', () => {
-	test('Primary Method: Case-Sensitive', () => {
-		const mockFs = createMockFs({ isCaseSensitive: true });
-		mockFs.writeFileSync(process.execPath, '');
-		expect(isFsCaseSensitive(mockFs, false)).toBe(true);
+describe('isFsCaseSensitive', ({ describe }) => {
+	describe('Primary Method (CWD exists)', ({ test }) => {
+		test('Case-Sensitive', () => {
+			const mockFs = createMockFs({ isCaseSensitive: true });
+			mockFs.writeFileSync(process.cwd(), '');
+			expect(isFsCaseSensitive(mockFs, false)).toBe(true);
+		});
+
+		test('Case-Insensitive', () => {
+			const mockFs = createMockFs({ isCaseSensitive: false });
+			mockFs.writeFileSync(process.cwd(), '');
+			expect(isFsCaseSensitive(mockFs, false)).toBe(false);
+		});
 	});
 
-	test('Primary Method: Case-Insensitive', () => {
-		const mockFs = createMockFs({ isCaseSensitive: false });
-		mockFs.writeFileSync(process.execPath, '');
-		expect(isFsCaseSensitive(mockFs, false)).toBe(false);
-	});
+	describe('Fallback Method (CWD has no letters)', ({ test }) => {
+		test('Case-Sensitive', () => {
+			const mockFs = createMockFs({ isCaseSensitive: true });
+			// CWD with no letters to invert triggers fallback
+			expect(isFsCaseSensitive(mockFs, false)).toBe(true);
+			const temporaryFile = path.join(process.cwd(), `.is-fs-case-sensitive-test-${process.pid}`);
+			expect(mockFs.existsSync(temporaryFile)).toBe(false);
+		});
 
-	test('Fallback Method: Case-Sensitive', () => {
-		const mockFs = createMockFs({ isCaseSensitive: true });
-		expect(isFsCaseSensitive(mockFs, false)).toBe(true);
-		const temporaryFile = path.join(os.tmpdir(), `is-fs-case-sensitive-test-${process.pid}`);
-		expect(mockFs.existsSync(temporaryFile)).toBe(false);
-	});
-
-	test('Fallback Method: Case-Insensitive', () => {
-		const mockFs = createMockFs({ isCaseSensitive: false });
-		expect(isFsCaseSensitive(mockFs, false)).toBe(false);
-		const temporaryFile = path.join(os.tmpdir(), `is-fs-case-sensitive-test-${process.pid}`);
-		expect(mockFs.existsSync(temporaryFile)).toBe(false);
+		test('Case-Insensitive', () => {
+			const mockFs = createMockFs({ isCaseSensitive: false });
+			// CWD with no letters to invert triggers fallback
+			expect(isFsCaseSensitive(mockFs, false)).toBe(false);
+			const temporaryFile = path.join(process.cwd(), `.is-fs-case-sensitive-test-${process.pid}`);
+			expect(mockFs.existsSync(temporaryFile)).toBe(false);
+		});
 	});
 
 	test('Caching mechanism works correctly', () => {
 		const sensitiveFs = createMockFs({ isCaseSensitive: true });
-		sensitiveFs.writeFileSync(process.execPath, '');
+		sensitiveFs.writeFileSync(process.cwd(), '');
 		expect(isFsCaseSensitive(sensitiveFs, true)).toBe(true);
 
 		const insensitiveFs = createMockFs({ isCaseSensitive: false });
-		insensitiveFs.writeFileSync(process.execPath, '');
+		insensitiveFs.writeFileSync(process.cwd(), '');
 		expect(isFsCaseSensitive(insensitiveFs, true)).toBe(true);
 
 		expect(isFsCaseSensitive(insensitiveFs, false)).toBe(false);

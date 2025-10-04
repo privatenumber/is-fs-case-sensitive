@@ -21,12 +21,25 @@ const invertCase = (string: string): string => {
 
 let cache: boolean | undefined;
 
+const checkDirectoryCaseWithWrite = (directory: string, fsInstance: FsSubset): boolean => {
+	const temporaryFile = path.join(directory, `.is-fs-case-sensitive-test-${process.pid}`);
+	try {
+		fsInstance.writeFileSync(temporaryFile, '');
+		return !fsInstance.existsSync(invertCase(temporaryFile));
+	} finally {
+		// Ensure the temporary file is always cleaned up
+		try {
+			fsInstance.unlinkSync(temporaryFile);
+		} catch {
+			// Ignore errors on cleanup
+		}
+	}
+};
+
 export const isFsCaseSensitive = (
-	// Use the more precise FsSubset type for the parameter
 	fsInstance: FsSubset = fs,
 	useCache: boolean = true,
 ): boolean => {
-	// Return cached result on subsequent calls
 	if (useCache && cache !== undefined) {
 		return cache;
 	}
@@ -34,39 +47,26 @@ export const isFsCaseSensitive = (
 	let result: boolean;
 
 	/**
-	 * Primary Method: Check an existing, known file path.
-	 * We use `process.execPath` because it's guaranteed to exist and
-	 * avoids needing any filesystem write permissions.
+	 * Primary Method: Check the CWD path
+	 * This is fast, I/O-free, and avoids triggering file watchers.
 	 */
-	const checkFile = process.execPath;
-	if (checkFile && fsInstance.existsSync(checkFile)) {
-		const invertedCheckFile = invertCase(checkFile);
+	const cwd = process.cwd();
+	const invertedCwd = invertCase(cwd);
 
-		// If the inverted-case path is the same as the original,
-		// it means there were no characters to invert, so we must use the fallback.
-		if (invertedCheckFile !== checkFile) {
-			result = !fsInstance.existsSync(invertedCheckFile);
-			if (useCache) {
-				cache = result;
-			}
-			return result;
-		}
-	}
-
-	/**
-	 * Fallback Method: Create a temporary file.
-	 * This uses the process ID to create a unique filename, avoiding conflicts.
-	 */
-	const temporaryFile = path.join(os.tmpdir(), `is-fs-case-sensitive-test-${process.pid}`);
-	try {
-		fsInstance.writeFileSync(temporaryFile, '');
-		result = !fsInstance.existsSync(invertCase(temporaryFile));
-	} finally {
-		// Ensure the temporary file is always cleaned up
+	if (invertedCwd !== cwd && fsInstance.existsSync(cwd)) {
+		result = !fsInstance.existsSync(invertedCwd);
+	} else {
+		/**
+		 * Fallback Method: Write a temp file
+		 * This is for the rare case where the CWD has no letters to invert.
+		 * We write to CWD to check the actual working directory's filesystem,
+		 * but fallback to os.tmpdir() if CWD is not writable.
+		 */
 		try {
-			fsInstance.unlinkSync(temporaryFile);
+			result = checkDirectoryCaseWithWrite(cwd, fsInstance);
 		} catch {
-			// Ignore errors on cleanup
+			// CWD not accessible or writable, fallback to temp dir
+			result = checkDirectoryCaseWithWrite(os.tmpdir(), fsInstance);
 		}
 	}
 

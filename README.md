@@ -56,11 +56,14 @@ console.log(isSensitive)
 
 ## ⚙️ How it Works
 
-The check is performed using a fast, permissionless primary method with a reliable fallback.
+The check detects case-sensitivity of the **working directory's filesystem** using a fast, I/O-free primary method with a reliable fallback.
 
-1.  **Primary Check:** The function checks against `process.execPath` (the path to the Node.js executable). It's guaranteed to exist and requires no filesystem write permissions. The function checks if an inverted-case version of this path also resolves.
-2.  **Fallback Check:** If the primary check is inconclusive (e.g., the path has no letters), it safely writes and immediately deletes a temporary file in the OS temp directory to make a definitive determination.
+1.  **Primary Check:** The function checks `process.cwd()` (the current working directory path). It inverts the case of the path and checks if the inverted-case version resolves to an existing directory. This is fast, requires no write permissions, and doesn't trigger file watchers.
+2.  **Fallback Check:** If the primary check is inconclusive (e.g., the path has no letters to invert or the directory doesn't exist), it safely writes and immediately deletes a temporary file. It tries to write in the working directory first, but falls back to the OS temp directory if the working directory isn't writable.
 3.  **Caching:** The result is **cached** after the first successful check. All subsequent calls to the function within the same process will return the cached result instantly, without performing another check.
+
+> [!IMPORTANT]
+> Since different mount points can have different case-sensitivity settings, this package checks the filesystem where your working directory resides, not where the Node.js binary or temp directory is located.
 
 ## 🛠️ API
 
