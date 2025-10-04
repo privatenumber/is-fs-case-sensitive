@@ -51,6 +51,7 @@
 	"devDependencies": {
 		"@types/node": "^24.6.2",
 		"clean-pkg-json": "^1.2.0",
+		"fs-fixture": "^2.9.0",
 		"lintroll": "^1.20.1",
 		"manten": "^1.5.0",
 		"memfs": "^4.48.1",
