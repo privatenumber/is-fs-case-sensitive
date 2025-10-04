@@ -19,9 +19,12 @@ const invertCase = (string: string): string => {
 	return newString;
 };
 
-let cache: boolean | undefined;
+const cache = new Map<string, boolean>();
 
-const checkDirectoryCaseWithWrite = (directory: string, fsInstance: FsSubset): boolean => {
+const checkDirectoryCaseWithWrite = (
+	directory: string,
+	fsInstance: FsSubset,
+): boolean => {
 	const temporaryFile = path.join(directory, `.is-fs-case-sensitive-test-${process.pid}`);
 	try {
 		fsInstance.writeFileSync(temporaryFile, '');
@@ -36,42 +39,56 @@ const checkDirectoryCaseWithWrite = (directory: string, fsInstance: FsSubset): b
 	}
 };
 
+const checkDirectoryCaseWithFallback = (
+	targetDirectory: string,
+	directoryPath: string | undefined,
+	fsInstance: FsSubset,
+): boolean => {
+	try {
+		return checkDirectoryCaseWithWrite(targetDirectory, fsInstance);
+	} catch (error) {
+		// Only fallback to tmpdir if no explicit directory was provided
+		if (directoryPath === undefined) {
+			return checkDirectoryCaseWithWrite(os.tmpdir(), fsInstance);
+		}
+		throw error;
+	}
+};
+
 export const isFsCaseSensitive = (
+	directoryPath?: string,
 	fsInstance: FsSubset = fs,
 	useCache: boolean = true,
 ): boolean => {
-	if (useCache && cache !== undefined) {
-		return cache;
+	const targetDirectory = directoryPath ?? process.cwd();
+
+	// Check cache for this specific directory
+	if (useCache && cache.has(targetDirectory)) {
+		return cache.get(targetDirectory)!;
 	}
 
 	let result: boolean;
 
 	/**
-	 * Primary Method: Check the CWD path
+	 * Primary Method: Check the directory path
 	 * This is fast, I/O-free, and avoids triggering file watchers.
 	 */
-	const cwd = process.cwd();
-	const invertedCwd = invertCase(cwd);
+	const invertedPath = invertCase(targetDirectory);
 
-	if (invertedCwd !== cwd && fsInstance.existsSync(cwd)) {
-		result = !fsInstance.existsSync(invertedCwd);
+	if (invertedPath !== targetDirectory && fsInstance.existsSync(targetDirectory)) {
+		result = !fsInstance.existsSync(invertedPath);
 	} else {
 		/**
 		 * Fallback Method: Write a temp file
-		 * This is for the rare case where the CWD has no letters to invert.
-		 * We write to CWD to check the actual working directory's filesystem,
-		 * but fallback to os.tmpdir() if CWD is not writable.
+		 * This is for the rare case where the directory path has no letters to invert.
+		 * If no directory was explicitly provided (defaults to CWD), fallback to os.tmpdir() on error.
+		 * If user explicitly provided a directory, let the error throw.
 		 */
-		try {
-			result = checkDirectoryCaseWithWrite(cwd, fsInstance);
-		} catch {
-			// CWD not accessible or writable, fallback to temp dir
-			result = checkDirectoryCaseWithWrite(os.tmpdir(), fsInstance);
-		}
+		result = checkDirectoryCaseWithFallback(targetDirectory, directoryPath, fsInstance);
 	}
 
 	if (useCache) {
-		cache = result;
+		cache.set(targetDirectory, result);
 	}
 	return result;
 };

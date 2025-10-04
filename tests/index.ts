@@ -28,13 +28,13 @@ describe('isFsCaseSensitive', ({ describe }) => {
 		test('Case-Sensitive', () => {
 			const mockFs = createMockFs({ isCaseSensitive: true });
 			mockFs.writeFileSync(process.cwd(), '');
-			expect(isFsCaseSensitive(mockFs, false)).toBe(true);
+			expect(isFsCaseSensitive(undefined, mockFs, false)).toBe(true);
 		});
 
 		test('Case-Insensitive', () => {
 			const mockFs = createMockFs({ isCaseSensitive: false });
 			mockFs.writeFileSync(process.cwd(), '');
-			expect(isFsCaseSensitive(mockFs, false)).toBe(false);
+			expect(isFsCaseSensitive(undefined, mockFs, false)).toBe(false);
 		});
 	});
 
@@ -42,7 +42,7 @@ describe('isFsCaseSensitive', ({ describe }) => {
 		test('Case-Sensitive', () => {
 			const mockFs = createMockFs({ isCaseSensitive: true });
 			// CWD with no letters to invert triggers fallback
-			expect(isFsCaseSensitive(mockFs, false)).toBe(true);
+			expect(isFsCaseSensitive(undefined, mockFs, false)).toBe(true);
 			const temporaryFile = path.join(process.cwd(), `.is-fs-case-sensitive-test-${process.pid}`);
 			expect(mockFs.existsSync(temporaryFile)).toBe(false);
 		});
@@ -50,21 +50,42 @@ describe('isFsCaseSensitive', ({ describe }) => {
 		test('Case-Insensitive', () => {
 			const mockFs = createMockFs({ isCaseSensitive: false });
 			// CWD with no letters to invert triggers fallback
-			expect(isFsCaseSensitive(mockFs, false)).toBe(false);
+			expect(isFsCaseSensitive(undefined, mockFs, false)).toBe(false);
 			const temporaryFile = path.join(process.cwd(), `.is-fs-case-sensitive-test-${process.pid}`);
 			expect(mockFs.existsSync(temporaryFile)).toBe(false);
 		});
 	});
 
-	test('Caching mechanism works correctly', () => {
+	test('Check specific directory path', () => {
+		const mockFs = createMockFs({ isCaseSensitive: true });
+		const testDirectory = '/some/test/directory';
+		mockFs.writeFileSync(testDirectory, '');
+		expect(isFsCaseSensitive(testDirectory, mockFs, false)).toBe(true);
+
+		const mockFs2 = createMockFs({ isCaseSensitive: false });
+		mockFs2.writeFileSync(testDirectory, '');
+		expect(isFsCaseSensitive(testDirectory, mockFs2, false)).toBe(false);
+	});
+
+	test('Caching mechanism works per directory', () => {
 		const sensitiveFs = createMockFs({ isCaseSensitive: true });
-		sensitiveFs.writeFileSync(process.cwd(), '');
-		expect(isFsCaseSensitive(sensitiveFs, true)).toBe(true);
+		const directory1 = '/dir1';
+		const directory2 = '/dir2';
+		sensitiveFs.writeFileSync(directory1, '');
+		sensitiveFs.writeFileSync(directory2, '');
 
+		// Cache directory1
+		expect(isFsCaseSensitive(directory1, sensitiveFs, true)).toBe(true);
+
+		// directory2 should not use directory1's cache
+		expect(isFsCaseSensitive(directory2, sensitiveFs, true)).toBe(true);
+
+		// Verify directory1 used cache
 		const insensitiveFs = createMockFs({ isCaseSensitive: false });
-		insensitiveFs.writeFileSync(process.cwd(), '');
-		expect(isFsCaseSensitive(insensitiveFs, true)).toBe(true);
-
-		expect(isFsCaseSensitive(insensitiveFs, false)).toBe(false);
+		insensitiveFs.writeFileSync(directory1, '');
+		// Still returns cached true
+		expect(isFsCaseSensitive(directory1, insensitiveFs, true)).toBe(true);
+		// Bypass cache
+		expect(isFsCaseSensitive(directory1, insensitiveFs, false)).toBe(false);
 	});
 });
