@@ -102,6 +102,7 @@ When omitted (defaults to current working directory), the function will fall bac
 #### `fsInstance`
 
 Type: `object` with `existsSync`, `writeFileSync`, and `unlinkSync` methods.
+
 Default: Node.js `fs` module.
 
 An optional filesystem implementation to use. This is primarily intended for testing with mock filesystems like `memfs`.
@@ -109,6 +110,7 @@ An optional filesystem implementation to use. This is primarily intended for tes
 #### `useCache`
 
 Type: `boolean`
+
 Default: `true`
 
 Controls whether the result is cached per directory.
