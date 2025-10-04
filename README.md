@@ -22,11 +22,12 @@ npm install is-fs-case-sensitive
 
 ### Basic Usage
 
-The function is memoized, so subsequent calls are instantaneous.
+Check the current working directory's filesystem. Results are cached per-directory.
 
 ```ts
 import { isFsCaseSensitive } from 'is-fs-case-sensitive'
 
+// Check current working directory (defaults to process.cwd())
 // On a standard macOS or Windows system:
 console.log(isFsCaseSensitive())
 // => false
@@ -34,6 +35,22 @@ console.log(isFsCaseSensitive())
 // On a standard Linux system:
 console.log(isFsCaseSensitive())
 // => true
+```
+
+### Check Specific Directory
+
+Check case-sensitivity of a specific directory's filesystem.
+
+```ts
+import { isFsCaseSensitive } from 'is-fs-case-sensitive'
+
+// Check a specific directory
+console.log(isFsCaseSensitive('/path/to/directory'))
+// => true or false depending on that directory's filesystem
+
+// Different mount points can have different case-sensitivity
+console.log(isFsCaseSensitive('/home/user')) // => true (ext4)
+console.log(isFsCaseSensitive('/mnt/windows')) // => false (NTFS)
 ```
 
 ### Advanced Usage
@@ -47,8 +64,8 @@ import { isFsCaseSensitive } from 'is-fs-case-sensitive'
 // `memfs` is case-sensitive by default
 const customFs = Volume.fromJSON({})
 
-// Pass in the custom fs implementation and disable the cache
-const isSensitive = isFsCaseSensitive(customFs, false)
+// Pass in directory, custom fs implementation, and disable cache
+const isSensitive = isFsCaseSensitive(undefined, customFs, false)
 
 console.log(isSensitive)
 // => true
@@ -56,22 +73,32 @@ console.log(isSensitive)
 
 ## ⚙️ How it Works
 
-The check detects case-sensitivity of the **working directory's filesystem** using a fast, I/O-free primary method with a reliable fallback.
+The check detects case-sensitivity of a **specific directory's filesystem** using a fast, I/O-free primary method with a reliable fallback.
 
-1.  **Primary Check:** The function checks `process.cwd()` (the current working directory path). It inverts the case of the path and checks if the inverted-case version resolves to an existing directory. This is fast, requires no write permissions, and doesn't trigger file watchers.
-2.  **Fallback Check:** If the primary check is inconclusive (e.g., the path has no letters to invert or the directory doesn't exist), it safely writes and immediately deletes a temporary file. It tries to write in the working directory first, but falls back to the OS temp directory if the working directory isn't writable.
-3.  **Caching:** The result is **cached** after the first successful check. All subsequent calls to the function within the same process will return the cached result instantly, without performing another check.
+1.  **Primary Check:** The function inverts the case of the directory path and checks if the inverted-case version resolves to an existing directory. This is fast, requires no write permissions, and doesn't trigger file watchers.
+2.  **Fallback Check:** If the primary check is inconclusive (e.g., the path has no letters to invert or the directory doesn't exist), it safely writes and immediately deletes a temporary file in that directory. When checking the default working directory and it's not writable, it falls back to the OS temp directory.
+3.  **Caching:** Results are **cached per directory**. Subsequent calls for the same directory return instantly without re-checking.
 
 > [!IMPORTANT]
-> Since different mount points can have different case-sensitivity settings, this package checks the filesystem where your working directory resides, not where the Node.js binary or temp directory is located.
+> Since different mount points can have different case-sensitivity settings, this package checks the filesystem where the specified directory resides. Always pass the directory you care about to get accurate results for that filesystem.
 
 ## 🛠️ API
 
-### `isFsCaseSensitive(fsInstance?, useCache?)`
+### `isFsCaseSensitive(directoryPath?, fsInstance?, useCache?)`
 
 Returns: `boolean`
 
 Returns `true` if the filesystem is case-sensitive, `false` otherwise.
+
+#### `directoryPath`
+
+Type: `string`
+
+Default: `process.cwd()`
+
+The directory path to check. Different mount points can have different case-sensitivity settings.
+
+When omitted (defaults to current working directory), the function will fall back to checking the OS temp directory if the working directory isn't writable. When explicitly provided, the function will throw an error if the directory isn't accessible or writable.
 
 #### `fsInstance`
 
@@ -87,6 +114,6 @@ Type: `boolean`
 
 Default: `true`
 
-Controls whether the result is cached.
-- `true`: The check runs once, and the result is memoized for all subsequent calls.
+Controls whether the result is cached per directory.
+- `true`: The check runs once per directory, and results are cached. Subsequent calls for the same directory return instantly.
 - `false`: The cache is bypassed, and the filesystem check is re-run. This is useful for tests where you need to check different mock filesystems.

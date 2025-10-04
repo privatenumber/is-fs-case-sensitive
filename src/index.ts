@@ -31,7 +31,7 @@ const invertCase = (string: string): string => {
 	return newString;
 };
 
-let cache: boolean | undefined;
+const cache = new Map<string, boolean>();
 
 /**
  * Checks directory case-sensitivity by writing a temporary file.
@@ -57,21 +57,39 @@ const checkDirectoryCaseWithWrite = (directory: string, fsInstance: FsSubset): b
 	}
 };
 
+const checkDirectoryCaseWithFallback = (
+	targetDirectory: string,
+	directoryPath: string | undefined,
+	fsInstance: FsSubset,
+): boolean => {
+	try {
+		return checkDirectoryCaseWithWrite(targetDirectory, fsInstance);
+	} catch (error) {
+		// Only fallback to tmpdir if no explicit directory was provided
+		if (directoryPath === undefined) {
+			return checkDirectoryCaseWithWrite(os.tmpdir(), fsInstance);
+		}
+		throw error;
+	}
+};
+
 /**
  * Detects whether the filesystem is case-sensitive.
  *
- * Uses a fast, I/O-free primary method that checks if the current working
- * directory path can be accessed with inverted case. Falls back to writing
- * a temporary file if the primary method is inconclusive.
+ * Uses a fast, I/O-free primary method that checks if the specified directory
+ * path can be accessed with inverted case. Falls back to writing a temporary
+ * file if the primary method is inconclusive.
  *
- * Different mount points can have different case-sensitivity settings, so
- * this function checks the filesystem where the current working directory
- * resides.
+ * Different mount points can have different case-sensitivity settings, so this
+ * function checks the filesystem where the specified directory resides.
  *
+ * @param directoryPath - The directory path to check. Defaults to
+ * `process.cwd()`. Different mount points can have different case-sensitivity.
  * @param fsInstance - Custom filesystem implementation (primarily for
  * testing). Defaults to Node.js `fs` module.
- * @param useCache - Whether to cache the result. Defaults to `true`. When
- * enabled, subsequent calls return instantly without re-checking.
+ * @param useCache - Whether to cache the result per directory. Defaults to
+ * `true`. When enabled, subsequent calls for the same directory return
+ * instantly without re-checking.
  * @returns `true` if the filesystem is case-sensitive, `false` otherwise
  *
  * @example
@@ -84,44 +102,45 @@ const checkDirectoryCaseWithWrite = (directory: string, fsInstance: FsSubset): b
  * } else {
  *   console.log('Case-insensitive filesystem (likely macOS/Windows)')
  * }
+ *
+ * // Check specific directory
+ * const isHomeCaseSensitive = isFsCaseSensitive('/home/user')
  * ```
  */
 export const isFsCaseSensitive = (
+	directoryPath?: string,
 	fsInstance: FsSubset = fs,
 	useCache: boolean = true,
 ): boolean => {
-	if (useCache && cache !== undefined) {
-		return cache;
+	const targetDirectory = directoryPath ?? process.cwd();
+
+	// Check cache for this specific directory
+	if (useCache && cache.has(targetDirectory)) {
+		return cache.get(targetDirectory)!;
 	}
 
 	let result: boolean;
 
 	/**
-	 * Primary Method: Check the CWD path
+	 * Primary Method: Check the directory path
 	 * This is fast, I/O-free, and avoids triggering file watchers.
 	 */
-	const cwd = process.cwd();
-	const invertedCwd = invertCase(cwd);
+	const invertedPath = invertCase(targetDirectory);
 
-	if (invertedCwd !== cwd && fsInstance.existsSync(cwd)) {
-		result = !fsInstance.existsSync(invertedCwd);
+	if (invertedPath !== targetDirectory && fsInstance.existsSync(targetDirectory)) {
+		result = !fsInstance.existsSync(invertedPath);
 	} else {
 		/**
 		 * Fallback Method: Write a temp file
-		 * This is for the rare case where the CWD has no letters to invert.
-		 * We write to CWD to check the actual working directory's filesystem,
-		 * but fallback to os.tmpdir() if CWD is not writable.
+		 * This is for the rare case where the directory path has no letters to invert.
+		 * If no directory was explicitly provided (defaults to CWD), fallback to os.tmpdir() on error.
+		 * If user explicitly provided a directory, let the error throw.
 		 */
-		try {
-			result = checkDirectoryCaseWithWrite(cwd, fsInstance);
-		} catch {
-			// CWD not accessible or writable, fallback to temp dir
-			result = checkDirectoryCaseWithWrite(os.tmpdir(), fsInstance);
-		}
+		result = checkDirectoryCaseWithFallback(targetDirectory, directoryPath, fsInstance);
 	}
 
 	if (useCache) {
-		cache = result;
+		cache.set(targetDirectory, result);
 	}
 	return result;
 };
