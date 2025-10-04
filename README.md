@@ -93,6 +93,7 @@ Returns `true` if the filesystem is case-sensitive, `false` otherwise.
 #### `directoryPath`
 
 Type: `string`
+
 Default: `process.cwd()`
 
 The directory path to check. Different mount points can have different case-sensitivity settings.
