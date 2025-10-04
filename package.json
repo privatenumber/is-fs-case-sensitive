@@ -51,10 +51,10 @@
 	"devDependencies": {
 		"@types/node": "^24.6.2",
 		"clean-pkg-json": "^1.2.0",
-		"lintroll": "^1.19.1",
+		"lintroll": "^1.20.1",
 		"manten": "^1.5.0",
 		"memfs": "^4.48.1",
-		"pkgroll": "^2.15.4",
+		"pkgroll": "^2.17.0",
 		"tsx": "^4.20.6",
 		"typescript": "^5.9.3"
 	}
