@@ -14,6 +14,9 @@ importers:
       clean-pkg-json:
         specifier: ^1.2.0
         version: 1.3.0
+      fs-fixture:
+        specifier: ^2.9.0
+        version: 2.9.0
       lintroll:
         specifier: ^1.20.1
         version: 1.20.1(@typescript-eslint/utils@8.45.0(eslint@9.37.0)(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.45.0(eslint@9.37.0)(typescript@5.9.3))(eslint@9.37.0))(typescript@5.9.3)
@@ -1342,6 +1345,10 @@ packages:
   format@0.2.2:
     resolution: {integrity: sha512-wzsgA6WOq+09wrU1tsJ09udeR/YZRaeArL9e1wPbFg3GG2yDnC2ldKpxs4xunpFF9DgqCqOIra3bc1HWrJ37Ww==}
     engines: {node: '>=0.4.x'}
+
+  fs-fixture@2.9.0:
+    resolution: {integrity: sha512-I/DNkzRfL71uabv3270h+lLOlJrUbQDHXb6JZxN8cgiFn0pi0dCE+etE8pzCvMuguSq34ClGXInhoaSW+1RZpw==}
+    engines: {node: '>=18.0.0'}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -3775,6 +3782,8 @@ snapshots:
       is-callable: 1.2.7
 
   format@0.2.2: {}
+
+  fs-fixture@2.9.0: {}
 
   fsevents@2.3.3:
     optional: true
