@@ -1,6 +1,6 @@
 import type { Stats, PathLike, PathOrFileDescriptor } from 'fs';
 import path from 'path';
-import { describe, expect } from 'manten';
+import { describe, test, expect } from 'manten';
 import { createFixture } from 'fs-fixture';
 import { isFsCaseSensitive } from '../src/index.js';
 
@@ -24,9 +24,9 @@ const createMockFs = (options: { isCaseSensitive: boolean }) => {
 	};
 };
 
-describe('isFsCaseSensitive', ({ describe }) => {
-	describe('Mock Filesystem Tests', ({ describe }) => {
-		describe('Primary Method (CWD exists)', ({ test }) => {
+describe('isFsCaseSensitive', () => {
+	describe('Mock Filesystem Tests', () => {
+		describe('Primary Method (CWD exists)', () => {
 			test('Case-Sensitive', () => {
 				const mockFs = createMockFs({ isCaseSensitive: true });
 				mockFs.writeFileSync(process.cwd(), '');
@@ -40,7 +40,7 @@ describe('isFsCaseSensitive', ({ describe }) => {
 			});
 		});
 
-		describe('Fallback Method (CWD has no letters)', ({ test }) => {
+		describe('Fallback Method (CWD has no letters)', () => {
 			test('Case-Sensitive', () => {
 				const mockFs = createMockFs({ isCaseSensitive: true });
 				// CWD with no letters to invert triggers fallback
@@ -58,7 +58,7 @@ describe('isFsCaseSensitive', ({ describe }) => {
 			});
 		});
 
-		describe('Specific Directory', ({ test }) => {
+		describe('Specific Directory', () => {
 			test('Check specific directory path', () => {
 				const mockFs = createMockFs({ isCaseSensitive: true });
 				const testDirectory = '/some/test/directory';
@@ -71,7 +71,7 @@ describe('isFsCaseSensitive', ({ describe }) => {
 			});
 		});
 
-		describe('Caching', ({ test }) => {
+		describe('Caching', () => {
 			test('Returns cached result per directory', () => {
 				const sensitiveFs = createMockFs({ isCaseSensitive: true });
 				const directory1 = '/dir1';
@@ -96,7 +96,7 @@ describe('isFsCaseSensitive', ({ describe }) => {
 		});
 	});
 
-	describe('Real Filesystem Tests', ({ test }) => {
+	describe('Real Filesystem Tests', () => {
 		test('Detects actual case-sensitivity in CWD', async () => {
 			await using fixture = await createFixture(
 				{
