@@ -50,14 +50,14 @@
 		"prepare": "skills-npm"
 	},
 	"devDependencies": {
-		"@types/node": "^24.6.2",
-		"clean-pkg-json": "^1.2.0",
-		"fs-fixture": "^2.9.0",
-		"lintroll": "^1.20.1",
+		"@types/node": "^25.5.0",
+		"clean-pkg-json": "^1.4.1",
+		"fs-fixture": "^2.13.0",
+		"lintroll": "^1.30.0",
 		"manten": "^2.0.0",
-		"memfs": "^4.48.1",
-		"pkgroll": "^2.17.0",
-		"skills-npm": "^1.0.0",
-		"typescript": "^5.9.3"
+		"memfs": "^4.56.11",
+		"pkgroll": "^2.27.0",
+		"skills-npm": "^1.1.1",
+		"typescript": "^6.0.2"
 	}
 }
