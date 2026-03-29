@@ -1,9 +1,12 @@
 {
 	"compilerOptions": {
-		"module": "Node16",
+		"target": "esnext",
+		"module": "nodenext",
+		"allowImportingTsExtensions": true,
+		"erasableSyntaxOnly": true,
 		"strict": true,
 		"noEmit": true,
-		"esModuleInterop": true,
-		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true,
 	},
 }

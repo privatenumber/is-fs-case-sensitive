@@ -43,8 +43,8 @@
 	"scripts": {
 		"lint": "lintroll",
 		"type-check": "tsc",
-		"test": "tsx tests",
-		"dev": "tsx watch --conditions=development tests",
+		"test": "node --conditions=development tests/index.ts",
+		"dev": "node --watch --conditions=development tests/index.ts",
 		"build": "pkgroll --minify",
 		"prepack": "pnpm build && clean-pkg-json",
 		"prepare": "skills-npm"
@@ -58,7 +58,6 @@
 		"memfs": "^4.48.1",
 		"pkgroll": "^2.17.0",
 		"skills-npm": "^1.0.0",
-		"tsx": "^4.20.6",
 		"typescript": "^5.9.3"
 	}
 }

@@ -2,7 +2,7 @@ import type { Stats, PathLike, PathOrFileDescriptor } from 'fs';
 import path from 'path';
 import { describe, test, expect } from 'manten';
 import { createFixture } from 'fs-fixture';
-import { isFsCaseSensitive } from '../src/index.js';
+import { isFsCaseSensitive } from '#is-fs-case-sensitive';
 
 // Helper to create a mock fs instance with corrected signatures
 const createMockFs = (options: { isCaseSensitive: boolean }) => {
